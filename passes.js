@@ -1,25 +1,64 @@
-var shapePasses = {
-    // linearExpandPass : function( startWidth , endWidth , height = 1 , offset = 0){
-    //     return function(vertices) {
-    //         for(var i = 0; i < vertices.length; i++)
-    //         {
-    //             var multiplier = startWidth + (endWidth - startWidth)*((vertices[i].y - offset)/height + 1/2);
-    //             vertices[i].x *= multiplier;
-    //             vertices[i].z *= multiplier;
-    //         }
-    //     };
-    // },
-    linearExpandPass : function( startWidth , endWidth , height , offset){
-        return function(vertices) {
-            for(var i = 0; i < vertices.length; i++)
+var shapePasses =
+    {
+        translate : function ( x, y, z ) 
             {
-                var multiplier = startWidth + (endWidth - startWidth)*((vertices[i].y - offset)/height + 1/2);
-                vertices[i].x *= multiplier;
-                vertices[i].z *= multiplier;
-            }
-        };
-    },
-}
+                return function(obj) {
+                    for(var i = 0; i < obj.originalGeom.length; i++)
+                    {
+                        var vertex = obj.originalGeom[i];
+                        vertex.x += x;
+                        vertex.y += y;
+                        vertex.z += z;
+                    }
+                };
+            },
+        rotate : function ( x, y, z ) 
+            {
+                var m = new THREE.Matrix4();
+
+                var m1 = new THREE.Matrix4();
+                var m2 = new THREE.Matrix4();
+                var m3 = new THREE.Matrix4();
+
+                m1.makeRotationX( x );
+                m2.makeRotationY( y );
+                m3.makeRotationZ( z );
+
+                m.multiplyMatrices( m1, m2 );
+                m.multiply( m3 );
+
+                return function(obj) {
+                    for(var i = 0; i < obj.originalGeom.length; i++)
+                    {
+                        obj.originalGeom[i].applyMatrix4(m);
+                    }
+                };
+            },
+        linearExpandPass : function( startWidth , endWidth , height , offset)
+            {
+                return function(obj) {
+                    for(var i = 0; i < obj.originalGeom.length; i++)
+                    {
+                        var vertex = obj.originalGeom[i];
+                        var multiplier = startWidth + (endWidth - startWidth)*((vertex.y - offset)/height + 1/2);
+                        vertex.x *= multiplier;
+                        vertex.z *= multiplier;
+                    }
+                };
+            },
+        quadExpandPass : function( startWidth , endWidth , height , offset)
+            {
+                return function(obj) {
+                    for(var i = 0; i < obj.originalGeom.length; i++)
+                    {
+                        var vertex = obj.originalGeom[i];
+                        var multiplier = startWidth + (endWidth - startWidth)*((vertex.y - offset)/height + 1/2);
+                        vertex.x *= multiplier*multiplier;
+                        vertex.z *= multiplier*multiplier;
+                    }
+                };
+            },
+    };
 var motionPasses = {
 
     everyXDo : function(changeEveryX, callback)
@@ -56,9 +95,41 @@ var motionPasses = {
                 {
                     for(var i = 0; i < obj.originalGeom.length; i++)
                     {
-                        obj.obj.geometry.vertices[i].x = obj.originalGeom[i].x + obj.originalGeom[i].x*Math.random()*randLength;
-                        obj.obj.geometry.vertices[i].y = obj.originalGeom[i].y + obj.originalGeom[i].y*Math.random()*randLength;
-                        obj.obj.geometry.vertices[i].z = obj.originalGeom[i].z + obj.originalGeom[i].z*Math.random()*randLength;
+                        var rand = Math.random()*randLength;
+                        obj.obj.geometry.vertices[i].x = obj.originalGeom[i].x + obj.originalGeom[i].x*rand;
+                        obj.obj.geometry.vertices[i].y = obj.originalGeom[i].y + obj.originalGeom[i].y*rand;
+                        obj.obj.geometry.vertices[i].z = obj.originalGeom[i].z + obj.originalGeom[i].z*rand;
+                    }
+                    obj.obj.geometry.verticesNeedUpdate = true;
+                };
+        },
+
+    addRandom : function(randWidth)
+        {
+            return function(obj)
+                {
+                    for(var i = 0; i < obj.obj.geometry.vertices.length; i++)
+                    {
+                        var vertex = obj.obj.geometry.vertices[i];
+                        vertex.x = vertex.x + Math.random()*randWidth - randWidth/2;
+                        vertex.y = vertex.y + Math.random()*randWidth - randWidth/2;
+                        vertex.z = vertex.z + Math.random()*randWidth - randWidth/2;
+                    }
+                    obj.obj.geometry.verticesNeedUpdate = true;
+                };
+        },
+
+    addRandomLength : function(randLength)
+        {
+            return function(obj)
+                {
+                    for(var i = 0; i < obj.obj.geometry.vertices.length; i++)
+                    {
+                        var rand = Math.random()*randLength;
+                        var vertex = obj.obj.geometry.vertices[i];
+                        obj.obj.geometry.vertices[i].x = vertex.x + vertex.x*rand;
+                        obj.obj.geometry.vertices[i].y = vertex.y + vertex.y*rand;
+                        obj.obj.geometry.vertices[i].z = vertex.z + vertex.z*rand;
                     }
                     obj.obj.geometry.verticesNeedUpdate = true;
                 };
