@@ -14,6 +14,7 @@ Bun = function(geom)
 
     this.addOriginalVertices();
     geom.uvsNeedUpdate = true;
+    this.obj.scale.set(50,50,50);
 }
 
 Bun.prototype.constructor = Bun
@@ -27,6 +28,18 @@ Bun.prototype.addOriginalVertices = function()
         var v3 = new THREE.Vector3(vertex.x,vertex.y,vertex.z);
         v3.speed = {x:0,y:0,z:0};
         this.originalGeom.push(v3);
+    }
+}
+
+Bun.prototype.setTo = function(other)
+{
+    var vertices = this.obj.geometry.vertices;
+    var otherVertices = other.obj.geometry.vertices;
+    for(var i = 0; i < vertices.length; i++)
+    {
+        var j = i;
+        j = Math.min(otherVertices.length - 1,i);
+        vertices[i].copy(otherVertices[j]);
     }
 }
 

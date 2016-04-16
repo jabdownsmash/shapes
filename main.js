@@ -17,7 +17,9 @@ function init() {
     camera.position.z = 250;
     scene = new THREE.Scene();
 
-    objects = []
+    objects = [];
+
+    icons = [];
 
     // for(var i = 0; i < 20; i++)
     // {
@@ -30,15 +32,13 @@ function init() {
             scene.add(obj1.obj);
             shapePasses.quadExpandPass(1,.5,4,0)(obj1);
 
-            obj1.obj.scale.set(50,50,50);
             obj1.reset();
             obj1.passes.push(motionPasses.expoPass);
             obj1.passes.push(motionPasses.everyXDo(20,motionPasses.addRandomLength(.2)));
             objects.push(obj1);
 
-            var object = new Bun(new THREE.TorusKnotGeometry( 2, 1.2, 10, 20 ));
+            var object = new Bun(new THREE.TorusKnotGeometry( 1, .6, 10, 20 ));
             object.obj.position.x = 100*1;
-            object.obj.scale.set(30,30,30);
             // object.obj.position.y = 40*j - 400;
             shapePasses.rotate(1,0,0)(object);
             shapePasses.translate(-3,0,0)(object);
@@ -59,10 +59,12 @@ function init() {
                     shapePasses.translate(3,0,0)(object);
                     shapePasses.rotate(-1,0,0)(object);
                     shapePasses.rotate(.5,0,.6)(object);
+                    object.setTo(obj1);
                 }));
             objects.push(object);
             // object.originalGeom = obj1.originalGeom;
             // object.randomizeVertices(2);
+            obj1.setTo(object);
     //     }
     // }
 
