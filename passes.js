@@ -139,9 +139,9 @@ var motionPasses = {
         {
             for(var i = 0; i < obj.originalGeom.length; i++)
             {
-                obj.obj.geometry.vertices[i].x += (obj.originalGeom[i].x  - obj.obj.geometry.vertices[i].x)/6;
-                obj.obj.geometry.vertices[i].y += (obj.originalGeom[i].y  - obj.obj.geometry.vertices[i].y)/6;
-                obj.obj.geometry.vertices[i].z += (obj.originalGeom[i].z  - obj.obj.geometry.vertices[i].z)/6;
+                obj.obj.geometry.vertices[i].x += (obj.originalGeom[i].x  - obj.obj.geometry.vertices[i].x)/4;
+                obj.obj.geometry.vertices[i].y += (obj.originalGeom[i].y  - obj.obj.geometry.vertices[i].y)/4;
+                obj.obj.geometry.vertices[i].z += (obj.originalGeom[i].z  - obj.obj.geometry.vertices[i].z)/4;
             }
             obj.obj.geometry.verticesNeedUpdate = true;
         },

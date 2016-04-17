@@ -11,9 +11,12 @@ var menuOn = false;
 var mainObject,plane,offset;
 var distanceThreshold = 60;
 var pulseCounter = 0;
-var pulseTime = .5;
+var pulseTime = beatLength;
 
 var menuObjects = [];
+var playing = false;
+
+var angles = []
 
 var mousedown = false;
 init();
@@ -44,12 +47,12 @@ function init() {
     );
     scene.add( plane );
 
-    scene.fog = new THREE.FogExp2( 0x3F284F, 0.0045); //p1
+    scene.fog = new THREE.FogExp2( menu.rows[0][0].mgColor, fogD); //p1
 
     renderer = new THREE.WebGLRenderer();
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
-    renderer.setClearColor( 0xDAD8A7);
+    renderer.setClearColor( menu.rows[0][0].bgColor);
 
     document.body.appendChild( renderer.domElement );
 
@@ -88,16 +91,16 @@ function onDocumentMouseMove( event ) {
         return;
     }
 }
-function tweenTo(obj,x,y,scale,startScale,onComplete)
+function tweenTo(obj,x,y,time,scale,startScale,onComplete)
 {
     new TWEEN.Tween(obj.obj.position)
-        .to({x: x, y: y}, 300)
-        .easing(TWEEN.Easing.Cubic.In)
+        .to({x: x, y: y}, time)
+        .easing(TWEEN.Easing.Cubic.Out)
         .onComplete(onComplete)
         .start();
     var col = {scale:startScale};
     new TWEEN.Tween(col)
-        .to({scale:scale}, 300)
+        .to({scale:scale}, time)
         .onUpdate(
             function()
                 {
@@ -107,23 +110,28 @@ function tweenTo(obj,x,y,scale,startScale,onComplete)
 }
 function triggerMenu(menuID){
         menuOn = true;
+        toggle();
         var menuFunc = function(mainAttr,settingsCB)
         {
-            tweenTo(mainObject,0,0,50,50,function(){
+            // tweenTo(mainObject,0,0,300,50,50,function(){
                 var numColors = menu.rows[menuID].length;
                 var settings = menu.settingsFromObject(mainObject);
                 for(var i = 0; i < numColors; i++)
                 {
                     var obj;
-                    var angle = Math.PI*2 * i/numColors;
+                    var angle = (Math.PI*2 * (i - mainAttr))/numColors + (menuID)*Math.PI/2;
+                    var size = 20;
                     if(i == mainAttr)
                     {
                         obj = mainObject;
+                        size = 30;
                     }
                     else
                     {
                         obj = menu.copyObject(mainObject);
                         // settings.color = i;
+                        obj.obj.position.x = mainObject.obj.position.x;
+                        obj.obj.position.y = mainObject.obj.position.y;
                         settingsCB(settings,i);
                         menu.transformTo(obj,settings);
                         scene.add(obj.obj);
@@ -134,34 +142,56 @@ function triggerMenu(menuID){
                     {
                         menuObjects[k].obj.clickFunc = function()
                         {
+                            var newObj = mainObject;
                             for(var j = 0; j < menuObjects.length; j++)
                             {
                                 if(j == k)
                                 {
-                                    mainObject = menuObjects[j];
-                                    tweenTo(menuObjects[j],0,0,50,20,function()
-                                        {
-                                            menuObjects = [];
-                                            objects = [mainObject];
-                                            menuOn = false;
-                                        });
+                                    // mainObject = menuObjects[j];
+                                    if(menuObjects[j] === mainObject)
+                                    {
+                                        tweenTo(menuObjects[j],0,0,100*j + 300,50,30,function()
+                                            {
+                                                menuObjects = [];
+                                                objects = [mainObject];
+                                                menuOn = false;
+                                            });
+                                    }
+                                    else
+                                    {
+                                        newObj = menuObjects[j];
+                                        tweenTo(menuObjects[j],mainObject.obj.position.x,mainObject.obj.position.y,100*j + 300,.1,20,(function(o)
+                                            {
+                                                return function()
+                                                    {
+                                                        menu.transformTo(mainObject,newObj,scene.fog,renderer);
+                                                        tweenTo(mainObject,0,0,300,50,30,function()
+                                                            {
+                                                            });
+                                                        scene.remove(o.obj)
+                                                        menuObjects = [];
+                                                        objects = [mainObject];
+                                                        menuOn = false;
+                                                    };
+                                            })(menuObjects[j]));
+                                    }
                                 }
-                                else
+                                else if( !(menuObjects[j] === mainObject))
                                 {
-                                    var angle = Math.PI*2 * k/menuObjects.length;
-                                    tweenTo(menuObjects[j],Math.cos(angle)*60,Math.sin(angle)*60,.1,20,(function(l)
+                                    tweenTo(menuObjects[j],menuObjects[j].obj.position.x,menuObjects[j].obj.position.y,100*j + 300,.1,20,(function(o)
                                         {
-                                            return function(){scene.remove(menuObjects[l])};
-                                        })(j));
+                                            return function(){scene.remove(o.obj)};
+                                        })(menuObjects[j]));
                                 }
                                 menuObjects[j].obj.clickFunc = null;
                             }
+                            channels[menuID].switchTo(k - 1);
                         }
                     };
                     addFunc(i);
-                    tweenTo(obj,Math.cos(angle)*60,Math.sin(angle)*60,20,50,function(){});
+                    tweenTo(obj,Math.cos(angle)*80,Math.sin(angle)*80,300,size,50,function(){});
                 }
-            });
+            // });
         }
         if(menuID == 0)
         {
@@ -185,8 +215,19 @@ function onDocumentTouchMove( event ) {
     mouse.x = ( event.touches[0].clientX / window.innerWidth ) * 2 - 1;
     mouse.y = - ( event.touches[0].clientY / window.innerHeight ) * 2 + 1;
 }
-function animate() {
+var start = null;
+var currentTime = 0;
+var previousTime = 0;
+function animate(timestamp) {
     requestAnimationFrame( animate );
+    var dt = 0;
+    if(timestamp)
+    {
+        if (!start) start = timestamp;
+        currentTime = timestamp - start;
+        dt = currentTime - previousTime;
+        previousTime = currentTime;
+    }
     TWEEN.update();
 
     camera.updateMatrixWorld();
@@ -209,25 +250,25 @@ function animate() {
         }
         if(SELECTED.position.x < -distanceThreshold)
         {
-            triggerMenu(3);
-            mousedown = false;
-            SELECTED = null;
-        }
-        if(SELECTED.position.x > distanceThreshold)
-        {
             triggerMenu(2);
             mousedown = false;
             SELECTED = null;
         }
-        if(SELECTED.position.y < -distanceThreshold) ///down
+        else if(SELECTED.position.x > distanceThreshold)
         {
-            triggerMenu(1);
+            triggerMenu(0);
             mousedown = false;
             SELECTED = null;
         }
-        if(SELECTED.position.y > distanceThreshold)
+        else if(SELECTED.position.y < -distanceThreshold) ///down
         {
-            triggerMenu(0);
+            triggerMenu(3);
+            mousedown = false;
+            SELECTED = null;
+        }
+        else if(SELECTED.position.y > distanceThreshold)
+        {
+            triggerMenu(1);
             mousedown = false;
             SELECTED = null;
         }
@@ -257,11 +298,20 @@ function animate() {
     for(var i=0; i < objects.length; i++)
     {
         objects[i].update();
+        objects[i].obj.rotation.y += dt/1000;
     }
 
-    pulseCounter += 1/60;
+    pulseCounter += dt;
     if(pulseCounter > pulseTime)
     {
+        for(var i = 0; i < channels.length; i++)
+        {
+            channels[i].sync(currentTime);
+            // if(currentTime % (beatLength*16) < beatLength)
+            // {
+            // //     channels[i].switchTo(channels[i].currentSound + 1);
+            // }
+        }
         pulseCounter -= pulseTime;
         for(var i=0; i < objects.length; i++)
         {

@@ -1,9 +1,12 @@
+
+var fogD = 0.0035;
+
 createMenu = function()
 {
     var currentSettings = {color:0,shape:0,mutation:0,pulse:0};
     var rows = [];
 
-    var colors = [[0xFF3D7F,0x3F284F,0xDAD8A7],[0xff0000,0x220000,0x440000],[0x00ff00,0x002200,0x004400],[0x5555ff,0x000022,0x000044]]
+    var colors = [[0xFFFFFF,0x000000,0x000000],[0xFF3D7F,0x3F284F,0xDAD8A7],[0xCFF09E,0x0B486B,0x3B8686],[0xE97F02,0x7D1550,0x490A3D]]
     var colorObjects = []
     for( var i = 0; i < colors.length; i++)
     {
@@ -17,8 +20,8 @@ createMenu = function()
                     obj.material.color.setHex( colors[j][1] );
                 },
                 setGlobalColors : function(app){
-                    app.scene.fog = new THREE.FogExp2( colors[j][2], 0.0045);
-                    app.renderer.setClearColor( colors[j][0]);
+                    app.scene.fog = new THREE.FogExp2( colors[j][1], fogD);
+                    app.renderer.setClearColor( colors[j][2]);
                 },
             });
         };
@@ -26,7 +29,7 @@ createMenu = function()
     }
     rows.push(colorObjects);
 
-    var shapes = [new THREE.SphereGeometry( 2, 10, 15 ), new THREE.TorusKnotGeometry( 1, .6, 10, 20 )];
+    var shapes = [new THREE.DodecahedronGeometry( 2 , 2), new THREE.TorusKnotGeometry( 1, .6, 10, 20 ), new THREE.TorusGeometry( 1, .6, 10, 20)];
     var shapeObjects = [];
     for( var i = 0; i < shapes.length; i++)
     {
@@ -49,17 +52,27 @@ createMenu = function()
 
     rows.push(shapeObjects);
 
-    var mutations = [function(obj){},function(obj){
-            shapePasses.rotate(1,0,0)(obj);
-            shapePasses.translate(-3,0,0)(obj);
-            shapePasses.linearExpandPass(.8,1.2,3,0)(obj);
-            shapePasses.translate(3,0,0)(obj);
-            shapePasses.rotate(-1,0,0)(obj);
-            shapePasses.rotate(.5,0,.6)(obj);
-            obj.reset();}];
+    var mutations = [function(obj){},
+            function(obj){
+                shapePasses.rotate(1,0,0)(obj);
+                shapePasses.translate(-3,0,0)(obj);
+                shapePasses.linearExpandPass(.5,1,3,0)(obj);
+                shapePasses.translate(3,0,0)(obj);
+                shapePasses.rotate(-1,0,0)(obj);
+                shapePasses.rotate(.5,0,.6)(obj);
+                shapePasses.linearExpandPass(1,.6,5,0)(obj);
+                obj.reset();
+            },
+            function(obj){
+                shapePasses.rotate(0,0,1)(obj);
+                shapePasses.linearExpandPass(1,-1,3,0)(obj);
+                // shapePasses.linearExpandPass(1,.1,5,0)(obj);
+                shapePasses.rotate(0,0,-1)(obj);
+                obj.reset();
+            }];
 
     var mutationObjects = []
-    for( var i = 0; i < shapes.length; i++)
+    for( var i = 0; i < mutations.length; i++)
     {
         var addFunc = function(j)
         {
@@ -75,7 +88,10 @@ createMenu = function()
     rows.push(mutationObjects);
 
     var pulses = [
-            [ motionPasses.randomizeVertices(3),function(obj){obj.passes.push(motionPasses.expoPass);}]
+            [ function(obj){},function(obj){obj.passes.push(motionPasses.expoPass);}],
+            [ function(obj){motionPasses.randomizeVertices(.1 + obj.pulseMult/4)(obj);},function(obj){obj.passes.push(motionPasses.expoPass);}],
+            [ function(obj){motionPasses.addRandomLength(.1 + obj.pulseMult/4)(obj);},function(obj){obj.passes.push(motionPasses.springPass);}],
+            [ function(obj){shapePasses.rotate(0,0,(.1 + obj.pulseMult/4)*Math.PI)(obj);},function(obj){obj.passes.push(motionPasses.expoPass);}]
         ];
 
     var pulseObjects = []
@@ -126,10 +142,16 @@ createMenu = function()
 
     var setSettings = function(obj,settings)
     {
+        obj.pulseMult = 0;
         obj.shape = settings.shape;
+        if(obj.shape > 0) {obj.pulseMult += 1;}
         obj.color = settings.color;
+        if(obj.color > 0) {obj.pulseMult += 1;}
         obj.mutation = settings.mutation;
+        if(obj.mutation > 0) {obj.pulseMult += 1;}
         obj.pulse = settings.pulse;
+        if(obj.shape > 0) {obj.pulseMult += 1;}
+
     }
 
     var menu = {
@@ -143,8 +165,8 @@ createMenu = function()
                 var obj = new Bun(rows[1][settings.shape].getGeom(),rows[0][settings.color].fgColor);
                 rows[2][settings.mutation].setMutation(obj);
                 rows[3][settings.pulse].setPulse(obj);
-                obj.pulseFunc(obj);
                 setSettings(obj,settings);
+                obj.pulseFunc(obj);
                 return obj;
             },
         settingsFromObject: function(obj)
@@ -169,9 +191,13 @@ createMenu = function()
                 var other = new Bun(rows[1][obj.shape].getGeom(),rows[0][obj.color].fgColor);
                 other.obj.geometry = oldGeom;
 
+                rows[1][settings.shape].setShape(obj);
+                // obj.obj.geometry.verticesNeedUpdate = true;
+
                 obj.passes = [];
                 rows[2][settings.mutation].setMutation(obj);
                 rows[3][settings.pulse].setPulse(obj);
+                obj.setTo(other);
 
                 var col = new THREE.Color(rows[0][settings.color].fgColor).getHSL();
                 var col2 = obj.obj.material.color.getHSL();
@@ -182,7 +208,6 @@ createMenu = function()
                         function()
                             {
                                 obj.obj.material.color.setHSL(this.h, this.s, this.l);
-                                obj.obj.material.needsUpdate = true;
                             })
                     .start();
                 if(renderer)
@@ -216,10 +241,7 @@ createMenu = function()
                                 })
                         .start();
                 }
-
-                rows[1][settings.shape].setShape(obj);
-                obj.obj.geometry.verticesNeedUpdate = true;
-                obj.setTo(other);
+                
                 setSettings(obj,settings);
 
             },
