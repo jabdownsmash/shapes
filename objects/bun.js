@@ -17,6 +17,7 @@ Bun = function(geom,color)
     this.obj.scale.set(50,50,50);
     var self = this;
     // this.pulse = function(){if(self.pulseFunc){self.pulseFunc(self)};};
+    this.obj.rotation.z = -Math.PI/2;
 }
 
 Bun.prototype.constructor = Bun

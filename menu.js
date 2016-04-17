@@ -55,19 +55,18 @@ createMenu = function()
     var mutations = [function(obj){},
             function(obj){
                 shapePasses.rotate(1,0,0)(obj);
-                shapePasses.translate(-3,0,0)(obj);
-                shapePasses.linearExpandPass(.5,1,3,0)(obj);
-                shapePasses.translate(3,0,0)(obj);
-                shapePasses.rotate(-1,0,0)(obj);
-                shapePasses.rotate(.5,0,.6)(obj);
-                shapePasses.linearExpandPass(1,.6,5,0)(obj);
+                shapePasses.quadExpandPass(.5,1,3,0)(obj);
+                shapePasses.quadExpandPass(2,.1,2,0)(obj);
                 obj.reset();
             },
             function(obj){
                 shapePasses.rotate(0,0,1)(obj);
                 shapePasses.linearExpandPass(1,-1,3,0)(obj);
-                // shapePasses.linearExpandPass(1,.1,5,0)(obj);
                 shapePasses.rotate(0,0,-1)(obj);
+                obj.reset();
+            },
+            function(obj){
+                shapePasses.spinPass(1)(obj);
                 obj.reset();
             }];
 
@@ -90,7 +89,7 @@ createMenu = function()
     var pulses = [
             [ function(obj){},function(obj){obj.passes.push(motionPasses.expoPass);}],
             [ function(obj){motionPasses.randomizeVertices(.1 + obj.pulseMult/4)(obj);},function(obj){obj.passes.push(motionPasses.expoPass);}],
-            [ function(obj){motionPasses.addRandomLength(.1 + obj.pulseMult/4)(obj);},function(obj){obj.passes.push(motionPasses.springPass);}],
+            [ function(obj){motionPasses.addRandom(.1 + obj.pulseMult/4)(obj);},function(obj){obj.passes.push(motionPasses.springPass);}],
             [ function(obj){shapePasses.rotate(0,0,(.1 + obj.pulseMult/4)*Math.PI)(obj);},function(obj){obj.passes.push(motionPasses.expoPass);}]
         ];
 

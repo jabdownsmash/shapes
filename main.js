@@ -160,25 +160,25 @@ function triggerMenu(menuID){
                                     else
                                     {
                                         newObj = menuObjects[j];
-                                        tweenTo(menuObjects[j],mainObject.obj.position.x,mainObject.obj.position.y,100*j + 300,.1,20,(function(o)
+                                        tweenTo(menuObjects[j],0,0,100*j + 300,.1,20,(function(o)
                                             {
                                                 return function()
                                                     {
-                                                        menu.transformTo(mainObject,newObj,scene.fog,renderer);
-                                                        tweenTo(mainObject,0,0,300,50,30,function()
-                                                            {
-                                                            });
                                                         scene.remove(o.obj)
                                                         menuObjects = [];
                                                         objects = [mainObject];
                                                         menuOn = false;
                                                     };
                                             })(menuObjects[j]));
+                                                        tweenTo(mainObject,0,0,300,50,30,function()
+                                                            {
+                                                                menu.transformTo(mainObject,newObj,scene.fog,renderer);
+                                                            });
                                     }
                                 }
                                 else if( !(menuObjects[j] === mainObject))
                                 {
-                                    tweenTo(menuObjects[j],menuObjects[j].obj.position.x,menuObjects[j].obj.position.y,100*j + 300,.1,20,(function(o)
+                                    tweenTo(menuObjects[j],menuObjects[j].obj.position.x,menuObjects[j].obj.position.y, 100,.1,20,(function(o)
                                         {
                                             return function(){scene.remove(o.obj)};
                                         })(menuObjects[j]));

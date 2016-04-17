@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>fuckin buns dude</title>
+        <title>motion: a</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
         <style>
@@ -74,21 +74,29 @@
     <body>
         <div class="div1 div2 div3">
         <div id="title" class="left">
-        stress
+        motion: a
+        <div style="font-size: .4em;">
+        by aaron santiago
         </div>
+        </div>
+         <br/>
         </div>
         <div class="div4 div2">
-        <div id="subtitle" class="left">
-        drag to start
+        <div style="font-size: .8em;" id="subtitle" class="left">
+        drag to start <br/>
+        best if used with sound
         </div>
         </div>
         <script>
         var box = document.getElementById('title');
         var box2 = document.getElementById('subtitle');
-
+        var toggleCounter = 3;
         function toggle() {
-          if (box.className == 'left') box.className = 'right';
-          if (box2.className == 'left') box2.className = 'down';
+            if(toggleCounter-- < 0)
+            {
+              if (box.className == 'left') box.className = 'right';
+              if (box2.className == 'left') box2.className = 'down';
+            }
         }
         </script>
         <script src="lib/three.js"></script>

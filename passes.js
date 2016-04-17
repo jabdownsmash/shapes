@@ -58,6 +58,30 @@ var shapePasses =
                     }
                 };
             },
+        spinPass : function( spinMultiplier )
+            {
+                return function(obj) {
+                    if(!spinMultiplier)
+                    {
+                        spinMultiplier = 1;
+                    }
+                    for(var i = 0; i < obj.originalGeom.length; i++)
+                    {
+                        var vertex = obj.originalGeom[i];
+                        // var radius = Math.sqrt(vertex.x*vertex.x + vertex.y*vertex.y + vertex.z*vertex.z);
+
+                        if(vertex.z > 0)
+                        {
+                            vertex.applyAxisAngle(new THREE.Vector3(0,1,0),spinMultiplier*vertex.y);
+                        }
+                        else
+                        {
+                            vertex.applyAxisAngle(new THREE.Vector3(0,-1,0),spinMultiplier*vertex.y);
+                        }
+                        // vertex.z *= multiplier*multiplier;
+                    }
+                };
+            },
     };
 var motionPasses = {
 
