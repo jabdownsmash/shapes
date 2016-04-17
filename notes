@@ -1,6 +1,13 @@
 
 color = tempo
+    4 colors
 shape = bass line
+    4 bass lines
 shape modifiers = other synths
-tween type = swing
+    8 synths
 beat randomization = drums
+    4 drums
+
+no \/
+tween type = swing
+    4 swings?

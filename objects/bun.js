@@ -1,7 +1,7 @@
 
-Bun = function(geom)
+Bun = function(geom,color)
 {
-    this.material = new THREE.MeshBasicMaterial( { color: 0xFF3D7F, side: THREE.DoubleSide } ); //p1
+    this.material = new THREE.MeshBasicMaterial( { color: color, side: THREE.DoubleSide } ); //p1
     // this.material = new THREE.MeshBasicMaterial( { color: 0x3FB8AF } ); //p1
     var object = new THREE.Mesh( geom, this.material );
     // var object = new THREE.Mesh( geom, new THREE.MeshNormalMaterial() );
@@ -15,6 +15,7 @@ Bun = function(geom)
     this.addOriginalVertices();
     geom.uvsNeedUpdate = true;
     this.obj.scale.set(50,50,50);
+    this.pulse = function(obj){};
 }
 
 Bun.prototype.constructor = Bun
