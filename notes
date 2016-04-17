@@ -11,3 +11,78 @@ beat randomization = drums
 no \/
 tween type = swing
     4 swings?
+
+
+    // mainObject.obj.clickFunc = function(){
+    // }
+    // mainObject.obj.position.z = 100;
+    // for(var i = 0; i < 4; i++)
+    // {
+    //     var object = menu.generateObject()
+    //     objects.push(object);
+    //     // object.obj.position.z = 100;
+    //     object.obj.position.x = 10*i - 80;
+    //     object.obj.position.y = 10*i - 80;
+    //     scene.add(object.obj);
+    // }
+
+    
+    // for(var i = 0; i < 20; i++)
+    // {
+    //     for(var j = 0; j < 20; j++)
+    //     {
+            // var obj1 = new Bun(new THREE.SphereGeometry( 2, 10, 15 ));
+            // obj1.obj.position.x = 100*(-1);
+            // obj1.obj.position.y = 40*j - 400;
+            // obj1.obj.position.z = Math.random() * 10 - 5;
+
+            // var obj2 = menu.generateObject({})
+            // scene.add(obj2.obj);
+            // objects.push(obj2);
+            // obj2.obj.position.x = 200;
+
+            // var obj3 = menu.generateObject({})
+            // scene.add(obj3.obj);
+            // objects.push(obj3);
+            // obj3.obj.position.y = -100;
+
+            // shapePasses.quadExpandPass(1,.5,4,0)(obj1);
+
+            // obj1.reset();
+            // obj1.passes.push(motionPasses.expoPass);
+            // obj1.passes.push(motionPasses.everyXDo(20,motionPasses.addRandomLength(.2)));
+            // objects.push(obj1);
+
+            // var object = new Bun(new THREE.TorusKnotGeometry( 1, .6, 10, 20 ));
+            // object.obj.position.x = 100*1;
+            // // object.obj.position.y = 40*j - 400;
+            // // object.obj.position.z = Math.random() * 10 - 5;
+            // scene.add(object.obj);
+            // object.passes.push(motionPasses.expoPass);
+            // // object.passes.push(motionPasses.everyXDo(20,motionPasses.addRandomLength(.2)));
+            // mainObject.passes.push(motionPasses.everyXDo(20,function(object)
+            //     {
+            //         shapePasses.rotate(1,0,0)(object);
+            //         shapePasses.translate(-3,0,0)(object);
+            //         // shapePasses.linearExpandPass(.8,1.2,3,0)(object);
+            //         shapePasses.translate(3,0,0)(object);
+            //         shapePasses.rotate(-1,0,0)(object);
+            //         shapePasses.rotate(.5,0,.6)(object);
+            //         object.setTo(obj1);
+            //     }));
+            // objects.push(object);
+            // object.originalGeom = obj1.originalGeom;
+            // object.randomizeVertices(2);
+            // obj1.setTo(object);
+            // obj1.obj.geometry = new THREE.TorusKnotGeometry( 1, .6, 10, 20 );
+            // obj1.addOriginalVertices();
+            // obj1.obj.clickFunc = function(){
+            //     object.setTo(obj1);
+            //     console.log('fuck');
+            // }
+            // obj1.setTo(objet);
+    //     }
+    // }
+
+    // scene.fog = new THREE.FogExp2( 0x2a363b, 0.0025 );
+    // scene.fog = new THREE.FogExp2( 0xFF3D7F, 0.0055 ); //p1

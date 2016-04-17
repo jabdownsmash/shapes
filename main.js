@@ -7,8 +7,13 @@ var INTERSECTED,SELECTED;
 var radius = 100, theta = 0;
 var suck = { kek2 : 200};
 var menu;
+var menuOn = false;
 var mainObject,plane,offset;
 var distanceThreshold = 60;
+var pulseCounter = 0;
+var pulseTime = .5;
+
+var menuObjects = [];
 
 var mousedown = false;
 init();
@@ -30,93 +35,22 @@ function init() {
 
     menu = createMenu();
     mainObject = menu.generateObject();
-    // mainObject.obj.clickFunc = function(){
-    // }
     objects.push(mainObject);
-    // mainObject.obj.position.z = 100;
     scene.add(mainObject.obj);
-    // for(var i = 0; i < 4; i++)
-    // {
-    //     var object = menu.generateObject()
-    //     objects.push(object);
-    //     // object.obj.position.z = 100;
-    //     object.obj.position.x = 10*i - 80;
-    //     object.obj.position.y = 10*i - 80;
-    //     scene.add(object.obj);
-    // }
+
     plane = new THREE.Mesh(
         new THREE.PlaneBufferGeometry( 2000, 2000, 8, 8 ),
         new THREE.MeshBasicMaterial( { visible: false } )
     );
     scene.add( plane );
 
-    // for(var i = 0; i < 20; i++)
-    // {
-    //     for(var j = 0; j < 20; j++)
-    //     {
-            // var obj1 = new Bun(new THREE.SphereGeometry( 2, 10, 15 ));
-            // obj1.obj.position.x = 100*(-1);
-            // obj1.obj.position.y = 40*j - 400;
-            // obj1.obj.position.z = Math.random() * 10 - 5;
-
-            // var obj2 = menu.generateObject({})
-            // scene.add(obj2.obj);
-            // objects.push(obj2);
-            // obj2.obj.position.x = 200;
-
-            // var obj3 = menu.generateObject({})
-            // scene.add(obj3.obj);
-            // objects.push(obj3);
-            // obj3.obj.position.y = -100;
-
-            // shapePasses.quadExpandPass(1,.5,4,0)(obj1);
-
-            // obj1.reset();
-            // obj1.passes.push(motionPasses.expoPass);
-            // obj1.passes.push(motionPasses.everyXDo(20,motionPasses.addRandomLength(.2)));
-            // objects.push(obj1);
-
-            // var object = new Bun(new THREE.TorusKnotGeometry( 1, .6, 10, 20 ));
-            // object.obj.position.x = 100*1;
-            // // object.obj.position.y = 40*j - 400;
-            // // object.obj.position.z = Math.random() * 10 - 5;
-            // scene.add(object.obj);
-            // object.passes.push(motionPasses.expoPass);
-            // // object.passes.push(motionPasses.everyXDo(20,motionPasses.addRandomLength(.2)));
-            // mainObject.passes.push(motionPasses.everyXDo(20,function(object)
-            //     {
-            //         shapePasses.rotate(1,0,0)(object);
-            //         shapePasses.translate(-3,0,0)(object);
-            //         // shapePasses.linearExpandPass(.8,1.2,3,0)(object);
-            //         shapePasses.translate(3,0,0)(object);
-            //         shapePasses.rotate(-1,0,0)(object);
-            //         shapePasses.rotate(.5,0,.6)(object);
-            //         object.setTo(obj1);
-            //     }));
-            // objects.push(object);
-            // object.originalGeom = obj1.originalGeom;
-            // object.randomizeVertices(2);
-            // obj1.setTo(object);
-            // obj1.obj.geometry = new THREE.TorusKnotGeometry( 1, .6, 10, 20 );
-            // obj1.addOriginalVertices();
-            // obj1.obj.clickFunc = function(){
-            //     object.setTo(obj1);
-            //     console.log('fuck');
-            // }
-            // obj1.setTo(objet);
-    //     }
-    // }
-
-    // scene.fog = new THREE.FogExp2( 0x2a363b, 0.0025 );
-    // scene.fog = new THREE.FogExp2( 0xFF3D7F, 0.0055 ); //p1
     scene.fog = new THREE.FogExp2( 0x3F284F, 0.0045); //p1
 
     renderer = new THREE.WebGLRenderer();
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
-    // renderer.setClearColor( 0x3FB8AF);
     renderer.setClearColor( 0xDAD8A7);
-    // renderer.setClearColor( 0x2a363b);
+
     document.body.appendChild( renderer.domElement );
 
     window.addEventListener( 'resize', onWindowResize, false );
@@ -124,12 +58,8 @@ function init() {
     document.addEventListener( 'touchmove', onDocumentTouchMove, false );
     document.addEventListener("touchstart", reset2,false);
     document.addEventListener("mousedown", reset,false);
-    document.addEventListener("touchend", function(){
-                    // plane.position.copy( INTERSECTED.position );
-                    SELECTED = null;mousedown = false},false);
-    document.addEventListener("mouseup", function(){
-                    // plane.position.copy( INTERSECTED.position );
-                    SELECTED = null;mousedown = false},false);
+    document.addEventListener("touchend", function(){SELECTED = null;mousedown = false},false);
+    document.addEventListener("mouseup", function(){SELECTED = null;mousedown = false},false);
 }
 function reset2(event){
     event.preventDefault();
@@ -147,7 +77,6 @@ function onDocumentMouseMove( event ) {
     event.preventDefault();
     mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
     mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-    console.log('keker');
 
     if ( SELECTED ) {
         var intersects = raycaster.intersectObject( plane );
@@ -159,6 +88,98 @@ function onDocumentMouseMove( event ) {
         return;
     }
 }
+function tweenTo(obj,x,y,scale,startScale,onComplete)
+{
+    new TWEEN.Tween(obj.obj.position)
+        .to({x: x, y: y}, 300)
+        .easing(TWEEN.Easing.Cubic.In)
+        .onComplete(onComplete)
+        .start();
+    var col = {scale:startScale};
+    new TWEEN.Tween(col)
+        .to({scale:scale}, 300)
+        .onUpdate(
+            function()
+                {
+                    obj.obj.scale.set(this.scale, this.scale, this.scale);
+                })
+        .start();
+}
+function triggerMenu(menuID){
+        menuOn = true;
+        var menuFunc = function(mainAttr,settingsCB)
+        {
+            tweenTo(mainObject,0,0,50,50,function(){
+                var numColors = menu.rows[menuID].length;
+                var settings = menu.settingsFromObject(mainObject);
+                for(var i = 0; i < numColors; i++)
+                {
+                    var obj;
+                    var angle = Math.PI*2 * i/numColors;
+                    if(i == mainAttr)
+                    {
+                        obj = mainObject;
+                    }
+                    else
+                    {
+                        obj = menu.copyObject(mainObject);
+                        // settings.color = i;
+                        settingsCB(settings,i);
+                        menu.transformTo(obj,settings);
+                        scene.add(obj.obj);
+                    }
+                    menuObjects.push(obj);
+                    objects.push(obj);
+                    var addFunc = function(k)
+                    {
+                        menuObjects[k].obj.clickFunc = function()
+                        {
+                            for(var j = 0; j < menuObjects.length; j++)
+                            {
+                                if(j == k)
+                                {
+                                    mainObject = menuObjects[j];
+                                    tweenTo(menuObjects[j],0,0,50,20,function()
+                                        {
+                                            menuObjects = [];
+                                            objects = [mainObject];
+                                            menuOn = false;
+                                        });
+                                }
+                                else
+                                {
+                                    var angle = Math.PI*2 * k/menuObjects.length;
+                                    tweenTo(menuObjects[j],Math.cos(angle)*60,Math.sin(angle)*60,.1,20,(function(l)
+                                        {
+                                            return function(){scene.remove(menuObjects[l])};
+                                        })(j));
+                                }
+                                menuObjects[j].obj.clickFunc = null;
+                            }
+                        }
+                    };
+                    addFunc(i);
+                    tweenTo(obj,Math.cos(angle)*60,Math.sin(angle)*60,20,50,function(){});
+                }
+            });
+        }
+        if(menuID == 0)
+        {
+            menuFunc(mainObject.color,function(s,i){s.color = i});
+        }
+        if(menuID == 1)
+        {
+            menuFunc(mainObject.shape,function(s,i){s.shape = i});
+        }
+        if(menuID == 2)
+        {
+            menuFunc(mainObject.mutation,function(s,i){s.mutation = i});
+        }
+        if(menuID == 3)
+        {
+            menuFunc(mainObject.pulse,function(s,i){s.pulse = i});
+        }
+}
 function onDocumentTouchMove( event ) {
     event.preventDefault();
     mouse.x = ( event.touches[0].clientX / window.innerWidth ) * 2 - 1;
@@ -166,14 +187,17 @@ function onDocumentTouchMove( event ) {
 }
 function animate() {
     requestAnimationFrame( animate );
-TWEEN.update();
+    TWEEN.update();
 
     camera.updateMatrixWorld();
     raycaster.setFromCamera( mouse, camera );
 
     if ( !SELECTED ) {
-        mainObject.obj.position.x *= .9;
-        mainObject.obj.position.y *= .9;
+        if(!menuOn)
+        {
+            mainObject.obj.position.x *= .9;
+            mainObject.obj.position.y *= .9;
+        }
     }
     else
     {
@@ -183,34 +207,39 @@ TWEEN.update();
             p.z = SELECTED.position.z;
             SELECTED.position.copy(p);
         }
+        if(SELECTED.position.x < -distanceThreshold)
+        {
+            triggerMenu(3);
+            mousedown = false;
+            SELECTED = null;
+        }
+        if(SELECTED.position.x > distanceThreshold)
+        {
+            triggerMenu(2);
+            mousedown = false;
+            SELECTED = null;
+        }
+        if(SELECTED.position.y < -distanceThreshold) ///down
+        {
+            triggerMenu(1);
+            mousedown = false;
+            SELECTED = null;
+        }
+        if(SELECTED.position.y > distanceThreshold)
+        {
+            triggerMenu(0);
+            mousedown = false;
+            SELECTED = null;
+        }
     }
     var intersects = raycaster.intersectObjects( scene.children );
     if ( intersects.length > 0 ) {
         var i = 0;
         while(i < intersects.length && intersects[i].object.nonIntersect){i++;}
         if ( i < intersects.length && INTERSECTED != intersects[ i ].object ) {
-            // if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
             INTERSECTED = intersects[ i ].object;
-            // INTERSECTED.randomizeVertices(3);
-            // var colors = [0xe84a5f]
-            // INTERSECTED.material.color = colors[Math.floor(Math.random()*colors.length)];
-            // INTERSECTED.material.color.setHex( 0x99b898 );
-            // var kek = INTERSECTED;
-            // var hsl = (new THREE.Color( 0x2a363b )).getHSL();
-            // var suck = {};
-            // suck.kek2 = 400;
-            // var hek = new TWEEN.Tween(suck)
-            //     .to({kek2:5}, 2000)
-            //     .easing(TWEEN.Easing.Quartic.In).onUpdate(function(){
-            //     console.log(suck.kek2);
-            // })
-            //     .start();
-            // INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
-            // INTERSECTED.material.emissive.setHex( 0xff0000 );
-            // console.log('heh2');
         }
     } else {
-        // if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
         INTERSECTED = null;
     }
     if(mousedown && !SELECTED)
@@ -228,33 +257,29 @@ TWEEN.update();
     for(var i=0; i < objects.length; i++)
     {
         objects[i].update();
+    }
 
+    pulseCounter += 1/60;
+    if(pulseCounter > pulseTime)
+    {
+        pulseCounter -= pulseTime;
+        for(var i=0; i < objects.length; i++)
+        {
+            objects[i].pulseFunc(objects[i]);
+
+        }
     }
     
     renderer.render( scene, camera );
 }
 function reset()
 {
-    mousedown = true;
+    if(!menuOn)
+    {
+        mousedown = true;
+    }
     if(INTERSECTED.clickFunc)
     {
         INTERSECTED.clickFunc();
     }
-        // mainObject.passes.push(motionPasses.everyXDo(20,motionPasses.addRandomLength(.2)));
-    // for(var i = 0; i < objects.length; i++)
-    // {
-    //     // motionPasses.randomizeVertices(3)(objects[i]);
-    //     var settings = {}
-    //     // settings.shape = 0
-    //     settings.shape = Math.floor(Math.random()*2) 
-    //     settings.color = Math.floor(Math.random()*4) 
-    //     // var kek = objects[i];
-    //     // objects[i] = 
-    //     menu.transformTo(objects[i],settings,scene.fog,renderer);
-    //     objects[i].passes.push(motionPasses.everyXDo(20,motionPasses.addRandomLength(.2)));
-
-    //     // scene.add(objects[i].obj);
-    //     // (objects[i].pulseFunc(objects[i]));
-    //     // scene.remove(kek.obj);
-    // }
 }

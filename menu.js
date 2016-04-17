@@ -41,7 +41,6 @@ createMenu = function()
                     obj.obj.geometry = shapes[j].clone();
                     obj.addOriginalVertices();
                     obj.reset();
-                    console.log('ha' + j);
                 }
             })
         };
@@ -135,13 +134,16 @@ createMenu = function()
 
     var menu = {
         rows:rows,
+        // triggerMenu: function(menuID,scene,mainObject)
+        // {
+        // },
         generateObject: function(settings)
             {
                 settings = formatSettings(settings);
                 var obj = new Bun(rows[1][settings.shape].getGeom(),rows[0][settings.color].fgColor);
                 rows[2][settings.mutation].setMutation(obj);
                 rows[3][settings.pulse].setPulse(obj);
-                obj.pulse(obj);
+                obj.pulseFunc(obj);
                 setSettings(obj,settings);
                 return obj;
             },
@@ -154,6 +156,12 @@ createMenu = function()
                 settings.pulse = obj.pulse;
                 return settings;
             },
+        copyObject: function(obj)
+            {
+                var newObj = this.generateObject(this.settingsFromObject(obj));
+                newObj.setTo(obj);
+                return newObj; 
+            },
         transformTo: function(obj,settings,fog,renderer)
             {
                 formatSettings(settings);
@@ -164,7 +172,7 @@ createMenu = function()
                 obj.passes = [];
                 rows[2][settings.mutation].setMutation(obj);
                 rows[3][settings.pulse].setPulse(obj);
-                // rows[0][settings.color].setColors(obj);
+
                 var col = new THREE.Color(rows[0][settings.color].fgColor).getHSL();
                 var col2 = obj.obj.material.color.getHSL();
                 if((col2.h - col.h) > .5 ){col.h += 1;}
@@ -212,6 +220,7 @@ createMenu = function()
                 rows[1][settings.shape].setShape(obj);
                 obj.obj.geometry.verticesNeedUpdate = true;
                 obj.setTo(other);
+                setSettings(obj,settings);
 
             },
         currentSettings: currentSettings,

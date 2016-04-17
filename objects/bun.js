@@ -15,7 +15,8 @@ Bun = function(geom,color)
     this.addOriginalVertices();
     geom.uvsNeedUpdate = true;
     this.obj.scale.set(50,50,50);
-    this.pulse = function(obj){};
+    var self = this;
+    // this.pulse = function(){if(self.pulseFunc){self.pulseFunc(self)};};
 }
 
 Bun.prototype.constructor = Bun
