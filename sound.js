@@ -3,10 +3,10 @@ var bpm = 92;
 var beatLength = 1/92*60 * 1000;
 
 var channels = [
-    {name:"kick",numSounds:3},
     {name:"lead",numSounds:2},
     {name:"bass",numSounds:3},
     {name:"drum",numSounds:3},
+    {name:"kick",numSounds:3},
 ]
 
 for(var i = 0; i < channels.length; i++)

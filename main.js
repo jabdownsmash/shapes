@@ -19,6 +19,21 @@ var playing = false;
 var angles = []
 
 var mousedown = false;
+
+var currentMenuNum = 0;
+var menuOrder = [
+        function(){return mainObject.shape},
+        function(){return mainObject.mutation},
+        function(){return mainObject.pulse},
+        function(){return mainObject.color},
+    ];
+var assignedMenus = [-1,-1,-1,-1];
+var assignedMenuFuncs = [
+    function(s,i){s.shape = i},
+    function(s,i){s.mutation = i},
+    function(s,i){s.pulse = i},
+    function(s,i){s.color = i},
+];
 init();
 animate();
 
@@ -47,12 +62,12 @@ function init() {
     );
     scene.add( plane );
 
-    scene.fog = new THREE.FogExp2( menu.rows[0][0].mgColor, fogD); //p1
+    scene.fog = new THREE.FogExp2( menu.rows[3][0].mgColor, fogD); //p1
 
     renderer = new THREE.WebGLRenderer();
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
-    renderer.setClearColor( menu.rows[0][0].bgColor);
+    renderer.setClearColor( menu.rows[3][0].bgColor);
 
     document.body.appendChild( renderer.domElement );
 
@@ -86,6 +101,14 @@ function onDocumentMouseMove( event ) {
         if ( intersects.length > 0 ) {
             var p = intersects[ 0 ].point.sub( offset );
             p.z = SELECTED.position.z;
+            if(p.x > p.y)
+            {
+                p.y *= .5;
+            }
+            else
+            {
+                p.x *= .5;
+            }
             SELECTED.position.copy(p);
         }
         return;
@@ -110,11 +133,16 @@ function tweenTo(obj,x,y,time,scale,startScale,onComplete)
 }
 function triggerMenu(menuID){
         menuOn = true;
-        toggle();
+        if(assignedMenus[menuID] < 0)
+        {
+            assignedMenus[menuID] = currentMenuNum++;
+            toggle();
+        }
+        // menuID = assignedMenus[menuID];
         var menuFunc = function(mainAttr,settingsCB)
         {
             // tweenTo(mainObject,0,0,300,50,50,function(){
-                var numColors = menu.rows[menuID].length;
+                var numColors = menu.rows[assignedMenus[menuID]].length;
                 var settings = menu.settingsFromObject(mainObject);
                 for(var i = 0; i < numColors; i++)
                 {
@@ -185,7 +213,7 @@ function triggerMenu(menuID){
                                 }
                                 menuObjects[j].obj.clickFunc = null;
                             }
-                            channels[menuID].switchTo(k - 1);
+                            channels[assignedMenus[menuID]].switchTo(k - 1);
                         }
                     };
                     addFunc(i);
@@ -195,19 +223,19 @@ function triggerMenu(menuID){
         }
         if(menuID == 0)
         {
-            menuFunc(mainObject.color,function(s,i){s.color = i});
+            menuFunc(menuOrder[assignedMenus[menuID]](),assignedMenuFuncs[assignedMenus[menuID]]);
         }
         if(menuID == 1)
         {
-            menuFunc(mainObject.shape,function(s,i){s.shape = i});
+            menuFunc(menuOrder[assignedMenus[menuID]](),assignedMenuFuncs[assignedMenus[menuID]]);
         }
         if(menuID == 2)
         {
-            menuFunc(mainObject.mutation,function(s,i){s.mutation = i});
+            menuFunc(menuOrder[assignedMenus[menuID]](),assignedMenuFuncs[assignedMenus[menuID]]);
         }
         if(menuID == 3)
         {
-            menuFunc(mainObject.pulse,function(s,i){s.pulse = i});
+            menuFunc(menuOrder[assignedMenus[menuID]](),assignedMenuFuncs[assignedMenus[menuID]]);
         }
 }
 function onDocumentTouchMove( event ) {
