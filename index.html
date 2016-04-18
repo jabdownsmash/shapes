@@ -92,7 +92,7 @@
         var box2 = document.getElementById('subtitle');
         var toggleCounter = 3;
         function toggle() {
-            if(toggleCounter-- < 0)
+            if(--toggleCounter <= 0)
             {
               if (box.className == 'left') box.className = 'right';
               if (box2.className == 'left') box2.className = 'down';
